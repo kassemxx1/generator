@@ -1,9 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:generator/Main_screen.dart';
 
 class Login_Screen extends StatefulWidget {
   static const String id = 'Login_Screen';
   const Login_Screen({Key? key}) : super(key: key);
-
   @override
   _Login_ScreenState createState() => _Login_ScreenState();
 }
@@ -17,10 +18,20 @@ class _Login_ScreenState extends State<Login_Screen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.yellow,
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: [
+            Text('                          ISC-Power',style:TextStyle(
+              fontSize: 30,
+              decoration: TextDecoration.underline,
+            ) ,),
+            Text(
+                '                                    APP',style: TextStyle(
+              fontSize: 30,
+            ),
+            ),
             Center(
                 child: Container(
                   decoration: BoxDecoration(
@@ -52,7 +63,6 @@ class _Login_ScreenState extends State<Login_Screen> {
                   keyboardType: TextInputType.name,
                   onChanged: (value) {
                     setState(() {
-
                       Name = value;
                     });
                   },
@@ -83,19 +93,28 @@ class _Login_ScreenState extends State<Login_Screen> {
                   keyboardType: TextInputType.name,
                   onChanged: (value) {
                     setState(() {
-
                       Pass = value;
                     });
                   },
                 ),
               ),
             ),
-
-
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: MaterialButton(
+                color: Colors.blue,
+                  child: Text('Login',style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),),
+                  onPressed:(){
+                  Navigator.pushNamed(context, Main_Screen.id);
+              },
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 }
-
