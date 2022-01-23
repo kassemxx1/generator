@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'Counter_Screen.dart';
-
+import 'Printing.dart';
 class Main_Screen extends StatefulWidget {
   static const String id = 'Main_Screen';
+  static List<String> suggestions = [];
+  static bool loading = false;
+  static const String url = 'http://localhost:5000';
+  static var lastUpdate = '';
   const Main_Screen({Key? key}) : super(key: key);
+
 
   @override
   _Main_ScreenState createState() => _Main_ScreenState();
@@ -31,11 +36,11 @@ class _Main_ScreenState extends State<Main_Screen> {
               onPressed: (){
 
               },
-              child: Text('test1'),
+              child: Text('Printer Setup'),
             ),
             MaterialButton(
               onPressed: (){
-
+           //   Navigator.pushNamed(context, Printing.id);
               },
               child: Text('Sign Out'),
             ),

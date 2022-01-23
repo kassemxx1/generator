@@ -1,7 +1,15 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:custom_radio_grouped_button/custom_radio_grouped_button.dart';
-
+import 'package:http/http.dart' as http;
+import 'package:date_format/date_format.dart';
+import 'package:provider/provider.dart';
+import 'Main_screen.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'Provider.dart';
 class Counter_Screen extends StatefulWidget {
   static const String id = 'Counter_Screen';
   static List<String> suggestions = [];
@@ -14,208 +22,336 @@ class _Counter_ScreenState extends State<Counter_Screen> {
   TextEditingController SearchController = TextEditingController();
   var Value ='';
   var Type ='';
-  var suggestions = [
-    'kassem abboud',
-    'tarek ismail',
-    'ali abboud',
-  ];
-  var Clients =[{'id':'1','name':'kassem abboud','code':'23232','box':'9','lastcounter':'217','currentcounter':'','month':'1' },{'id':'2','name':'tarek ismail','code':'23432434','box':'9','lastcounter':'180','currentcounter':'190','month':'1' },{'id':'3','name':'ali abboud','code':'23232','box':'5','lastcounter':'500','currentcounter':'','month':'1' }];
-List<client> TempList =[];
+ // var suggestions = [];
+//  var Clients =[{'id':'1','name':'kassem abboud','code':'23232','box':'9','lastcounter':'217','currentcounter':'','month':'1' },{'id':'2','name':'tarek ismail','code':'23432434','box':'9','lastcounter':'180','currentcounter':'190','month':'1' },{'id':'3','name':'ali abboud','code':'23232','box':'5','lastcounter':'500','currentcounter':'','month':'1' }];
+  var Clients=[] ;
+  List<client> TempList =[];
+  var success ='';
 setcontname(String n){
   var n =TextEditingController();
   return n;
 }
+  void getlast() async {
+    EasyLoading.show();
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    if (_prefs.getBool('first') == false) {
+      setState(() {
+        Main_Screen.lastUpdate = formatDate(
+            DateTime.parse(_prefs.getString('lastupdate').toString()),
+            [hh, ':', nn, ' ', dd, '-', mm, '-', yyyy]) +
+            ': آخر تحديث';
+      });
+
+      print(_prefs.getString('lastupdate'));
+      print(Main_Screen.lastUpdate);
+    } else {
+      Main_Screen.lastUpdate = 'Please Update';
+    }
+    EasyLoading.dismiss();
+  }
+
+void getclients() async {
+  EasyLoading.show();
+  Clients.clear();
+  // var url=Uri.parse('http://localhost:5000');
+  // var response = await http.get(url);
+  // var data = json.decode(response.body);
+  SharedPreferences _prefs = await SharedPreferences.getInstance();
+  Clients = json.decode(_prefs.getString('allclients').toString());
+  for (var i in Clients){
+    var id = i['id'].toString();
+    var name = i['name'].toString();
+    var lastcounter = i['lastcounter'].toString();
+    var box =i['box'].toString();
+    Clients.add({
+      'id':id,
+      'name':name,
+      'lastcounter':lastcounter,
+      'box':box
+
+    });
+  }
+  setState(() {
+    getData('name');
+  });
+
+  EasyLoading.dismiss();
+}
 void getData(String type) {
-  suggestions.clear();
+  EasyLoading.show();
+  Main_Screen.suggestions.clear();
   for (var i in Clients){
     setState(() {
-      suggestions.add(
+      Main_Screen.suggestions.add(
           i[type].toString());
     });
   }
+  EasyLoading.dismiss();
 }
 void GetInfo( String value){
+  EasyLoading.show();
 TempList.clear();
   for (var i in Clients){
-  print(i);
     if(i[Type]==Value){
-      print(i[value]);
       setState(() {
-        TempList.add(client(i['id'].toString(), i['name'].toString(), i['lastcounter'].toString(), i['currentcounter'].toString(), i['month'].toString(),setcontname('controller' + Clients.indexOf(i).toString())));
+        TempList.add(client(i['id'].toString(), i['name'].toString(), i['lastcounter'].toString(), i['currentcounter'].toString(), i['month'].toString(),setcontname('controller' + Clients.indexOf(i).toString()),i['box'].toString()));
       });
     }
   }
-  print(TempList);
+  EasyLoading.dismiss();
 }
   @override
   void initState() {
-  Type='name';
-  getData('name');
+  getclients();
+  getlast();
+
     // TODO: implement initState
     super.initState();
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Counter'),
-      ),
-      body: ListView(
-        children: [
-          CustomRadioButton(
-            enableShape: false,
-            elevation: 0,
-            absoluteZeroSpacing: true,
-            unSelectedColor: Theme.of(context).canvasColor,
-            buttonLables: [
-              'name',
-              'box',
-              'code',
-            ],
-            buttonValues: [
-              "name",
-              "box",
-              "code",
-            ],
-            buttonTextStyle: ButtonTextStyle(
-                selectedColor: Colors.white,
-                unSelectedColor: Colors.black,
-                textStyle: TextStyle(fontSize: 16)),
-            radioButtonValue: (value) {
-              setState(() {
-                Type=value.toString();
-                getData(value.toString());
-              });
-
-            },
-            selectedColor: Theme.of(context).backgroundColor,
-          ),
-          Container(
-              padding: EdgeInsets.all(10),
-              alignment: Alignment.center,
-              child: EasyAutocomplete(
-                controller: SearchController,
-                suggestions: suggestions,
-                autofocus: false,
-                onChanged: (value){
-                  setState(() {
-                    Value = value;
-                  });
-                  print(Value);
+    return ChangeNotifierProvider<Clientss>.value(
+       value:Clientss(),
+      child:Consumer<Clientss>(
+        builder: (context,value,child) => Scaffold(
+            appBar: AppBar(
+              actions: [
+                IconButton(onPressed:(){
+                  Provider.of<Clientss>(context,listen:false).getclients();
+                  getclients();
                 },
-              )),
-          Center(
-            child: Text(Value),
-          ),
-          MaterialButton(
-            child: Text('Get'),
-            onPressed: (){
-              SearchController.clear();
-              GetInfo(Value);
-            },
-          ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-
-            child: DataTable(
-
-              dataRowHeight: 60,
-              columns:[
-                DataColumn(label: Center(
-
-                  child: Center(child: Text('ID')),
-                )),
-                DataColumn(label: Center(
-                  child: Center(child: Text('Name')),
-                )),
-                DataColumn(label: Center(
-                  child: Center(child: Text('LastCounter')),
-                )),
-                DataColumn(label: Center(
-                  child: Center(child: Text('Counter')),
-                )),
-                DataColumn(label: Center(
-                  child: Text('#'),
-                )),
-
+                    icon: Icon(Icons.update)),
               ],
-              rows:TempList.map((client) =>
-                  DataRow(selected: true ,cells:[
-                    DataCell(
-                      Container(
-                        width:MediaQuery.of(context).size.width/10,
-                        child:Center(child: Text(client.id)),
-                      ),
-                    ),
-
-                    DataCell(
-                      Container(
-                        width: MediaQuery.of(context).size.width*3/10,
-                        child:Center(child: Text(client.name)),
-                      ),
-                    ),DataCell(
-                      Container(
-                        width: MediaQuery.of(context).size.width/10,
-                        child:Center(child: Text(client.LastCounter)),
-                      ),
-                    ),
-                    DataCell(
-                      Container(
-                        width: MediaQuery.of(context).size.width*2/10,
-                        child:Center(
-                          child: TextField(
-                            controller: client.cont,
-                            style: TextStyle(
-                              fontSize: 20,
-                            ),
-                            decoration: InputDecoration(
-                              labelText: client.CurrentCounter.toString(),
-                              suffix: client.cont.text.isEmpty ?
-                                  Container(
-                                    width: 0,
-                                  )
-                                  :
-                                IconButton(onPressed: (){
-                                  client.cont.clear();
-                                },
-                                    icon: Icon(Icons.close)
-                                ),
-
-                            ),
-                            keyboardType: TextInputType.number,
-                            onChanged: (value){
-
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                    DataCell(
-                      Container(
-                        width:MediaQuery.of(context).size.width*2/10,
-                        child:MaterialButton(
-                          onPressed: (){
-
-                          },
-                          child: Text('Submit'),
-                        ),
-                      ),
-                    ),
-                      ])
-              ).toList(),
             ),
-          )
-        ],
-      ),
+            body: ListView(
+              children: [
+
+
+                  Text(Main_Screen.lastUpdate),
+
+                CustomRadioButton(
+
+                  enableShape: false,
+                  elevation: 0,
+                  absoluteZeroSpacing: true,
+                  unSelectedColor: Theme.of(context).canvasColor,
+                  buttonLables: [
+                    'name',
+                    'box',
+                    'id',
+                  ],
+                  buttonValues: [
+                    "name",
+                    "box",
+                    "id",
+                  ],
+                  buttonTextStyle: ButtonTextStyle(
+                      selectedColor: Colors.white,
+                      unSelectedColor: Colors.black,
+                      textStyle: TextStyle(fontSize: 16)),
+                  radioButtonValue: (value) {
+
+                    setState(() {
+                      Type=value.toString();
+                      getData(Type);
+                    });
+
+                  },
+                  selectedColor: Theme.of(context).backgroundColor,
+                ),
+                Container(
+                    padding: EdgeInsets.all(10),
+                    alignment: Alignment.center,
+                    child: EasyAutocomplete(
+
+                      controller: SearchController,
+                      suggestions: Main_Screen.suggestions,
+                      autofocus: false,
+                      onChanged: (value){
+                        setState(() {
+                          Value = value;
+                        });
+                        print(Value);
+                      },
+                    )),
+                Center(
+                  child: Text(Value),
+                ),
+                MaterialButton(
+                  child: Text('Get'),
+                  onPressed: (){
+                    SearchController.clear();
+                    GetInfo(Value);
+                  },
+                ),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+
+
+                  child: DataTable(
+
+                    dataRowHeight: 60,
+                    columns:[
+                      DataColumn(label: Center(
+
+                        child: Center(child: Text('ID')),
+                      )),
+                      DataColumn(label: Center(
+                        child: Center(child: Text('Name')),
+                      )),
+                      DataColumn(label: Center(
+                        child: Center(child: Text('LastCounter')),
+                      )),
+                      DataColumn(label: Center(
+                        child: Center(child: Text('Counter')),
+                      )),
+                      DataColumn(label: Center(
+                        child: Text('#'),
+                      )),
+
+                    ],
+                    rows:TempList.map((client) =>
+                        DataRow(selected: true ,cells:[
+                          DataCell(
+                            Container(
+                              width:MediaQuery.of(context).size.width/10,
+                              child:Center(child: Text(client.id)),
+                            ),
+                          ),
+
+                          DataCell(
+                            Container(
+                              width: MediaQuery.of(context).size.width*3/10,
+                              child:Center(child: Text(client.name)),
+                            ),
+                          ),DataCell(
+                            Container(
+                              width: MediaQuery.of(context).size.width/10,
+                              child:Center(child: Text(client.LastCounter)),
+                            ),
+                          ),
+                          DataCell(
+                            Container(
+                              width: MediaQuery.of(context).size.width*2/10,
+                              child:Center(
+                                child: TextField(
+                                  controller: client.cont,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                  ),
+                                  decoration: InputDecoration(
+                                    labelText: client.CurrentCounter.toString(),
+                                    suffix: client.cont.text.isEmpty ?
+                                    Container(
+                                      width: 0,
+                                    )
+                                        :
+                                    IconButton(onPressed: (){
+                                      client.cont.clear();
+                                    },
+                                        icon: Icon(Icons.close)
+                                    ),
+
+                                  ),
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (value){
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            Container(
+                              width:MediaQuery.of(context).size.width*2/10,
+                              child:MaterialButton(
+
+                                onPressed: () async {
+                                  EasyLoading.show();
+                                  var url = Uri.parse('http://localhost:5000/transaction');
+
+                                  Map<String,dynamic> bbb ={
+                                    'id':int.parse(client.id) ,
+                                    'counter':int.parse(client.cont.text),
+                                  };
+                                  try{
+                                   var response = await http.post(url , headers: <String, String>{
+                                      'Content-Type':
+                                      'application/x-www-form-urlencoded; charset=UTF-8',
+                                    },body:json.encode(bbb));
+                                   var data = json.decode(response.body);
+                                   print(response.body);
+                                     if(data['state']==1){
+                                       Fluttertoast.showToast(
+                                           msg: "Success",
+                                           toastLength: Toast.LENGTH_SHORT,
+                                           gravity: ToastGravity.BOTTOM,
+                                           timeInSecForIosWeb: 1,
+                                           backgroundColor: Colors.grey,
+                                           textColor: Colors.white,
+                                           fontSize: 16.0
+                                       );
+                                       client.cont.clear();
+                                       EasyLoading.dismiss();
+                                     }
+                                     if(data['state']==2){
+                                       Fluttertoast.showToast(
+                                           msg: "error",
+                                           toastLength: Toast.LENGTH_SHORT,
+                                           gravity: ToastGravity.BOTTOM,
+                                           timeInSecForIosWeb: 1,
+                                           backgroundColor: Colors.grey,
+                                           textColor: Colors.white,
+                                           fontSize: 16.0
+                                       );
+                                       EasyLoading.dismiss();
+                                     }
+
+                                  }
+
+                                  catch(err){
+                                    Fluttertoast.showToast(
+                                        msg: "internet problem",
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        gravity: ToastGravity.BOTTOM,
+                                        timeInSecForIosWeb: 1,
+                                        backgroundColor: Colors.grey,
+                                        textColor: Colors.white,
+                                        fontSize: 16.0
+                                    );
+                                    EasyLoading.dismiss();
+
+                                  }
+
+                                },
+                                child: Text('Submit'),
+                              ),
+                            ),
+                          ),
+                        ])
+                    ).toList(),
+                  ),
+                )
+              ],
+            ),
+          ) ,
+
+      )
+
+
+
     );
-  }
 }
+}
+
 class client {
   String id;
   String name;
   String LastCounter;
   String CurrentCounter;
   String Month;
+  String box;
   TextEditingController cont;
-  client(this.id,this.name,this.LastCounter,this.CurrentCounter,this.Month,this.cont);
+  client(this.id,this.name,this.LastCounter,this.CurrentCounter,this.Month,this.cont,this.box);
 }
+
+
