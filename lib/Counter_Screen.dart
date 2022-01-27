@@ -85,17 +85,17 @@ class _Counter_ScreenState extends State<Counter_Screen> {
     }
     EasyLoading.dismiss();
   }
-  String getId(String name){
-    for(var i in Clients){
-      if(i['name']==Value){
-        return i['id'];
-      }
-      if(i['id']==Value){
-        return i['id'];
-      }
 
+  String getId(String name) {
+    for (var i in Clients) {
+      if (i['name'] == Value) {
+        return i['id'];
+      }
+      if (i['id'] == Value) {
+        return i['id'];
+      }
     }
-    return(Value);
+    return (Value);
   }
 
   void GetInfo(String value) async {
@@ -104,8 +104,7 @@ class _Counter_ScreenState extends State<Counter_Screen> {
     var url = Uri.parse(Main_Screen.url.toString() + '/getcounters');
     Map<String, dynamic> bbb = {
       'Option': Type == 'box' ? 2 : 1,
-      'CodeId': Type == 'box' ? Value : getId(Value) ,
-
+      'CodeId': Type == 'box' ? Value : getId(Value),
     };
     try {
       var response = await http.post(url,
@@ -136,8 +135,6 @@ class _Counter_ScreenState extends State<Counter_Screen> {
           textColor: Colors.white,
           fontSize: 16.0);
       EasyLoading.dismiss();
-
-
     }
 
     EasyLoading.dismiss();
@@ -243,8 +240,10 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                                     Expanded(
                                       flex: 4,
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Center(
                                             child: Text(
@@ -255,7 +254,13 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                                               ),
                                             ),
                                           ),
-                                          Center(child: Text(client.LastCounter,style: TextStyle(color: Colors.red,fontSize: 20),)),
+                                          Center(
+                                              child: Text(
+                                            client.LastCounter,
+                                            style: TextStyle(
+                                                color: Colors.red,
+                                                fontSize: 20),
+                                          )),
                                         ],
                                       ),
                                     ),
@@ -269,9 +274,8 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                                           ),
                                           decoration: InputDecoration(
                                             border: OutlineInputBorder(),
-                                            hintText:
-                                                client.CurrentCounter.toString(),
-
+                                            hintText: client.CurrentCounter
+                                                .toString(),
                                           ),
                                           keyboardType: TextInputType.number,
                                           onChanged: (value) {},
@@ -336,9 +340,11 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                                             EasyLoading.dismiss();
                                           }
                                         },
-                                        child: Text('Submit',style: TextStyle(
-                                          color:Colors.blue,fontSize: 20
-                                        ),),
+                                        child: Text(
+                                          'Submit',
+                                          style: TextStyle(
+                                              color: Colors.blue, fontSize: 20),
+                                        ),
                                       ),
                                     )
                                   ],
@@ -359,7 +365,6 @@ class client {
   String name;
   String LastCounter;
   String CurrentCounter;
-
   TextEditingController cont;
   client(this.id, this.name, this.LastCounter, this.CurrentCounter, this.cont);
 }

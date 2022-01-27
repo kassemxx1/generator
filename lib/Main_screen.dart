@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'Counter_Screen.dart';
+import 'LoginScreen.dart';
 import 'Printing.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 class Main_Screen extends StatefulWidget {
   static const String id = 'Main_Screen';
   static List<String> suggestions = [];
@@ -39,8 +41,11 @@ class _Main_ScreenState extends State<Main_Screen> {
               child: Text('Printer Setup'),
             ),
             MaterialButton(
-              onPressed: (){
-           //   Navigator.pushNamed(context, Printing.id);
+              onPressed: () async{
+                SharedPreferences _prefs = await SharedPreferences.getInstance();
+                _prefs.remove('user');
+                _prefs.remove('pass');
+                Navigator.pushNamed(context, Login_Screen.id);
               },
               child: Text('Sign Out'),
             ),
