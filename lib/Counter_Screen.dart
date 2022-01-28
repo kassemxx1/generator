@@ -101,7 +101,7 @@ class _Counter_ScreenState extends State<Counter_Screen> {
   void GetInfo(String value) async {
     EasyLoading.show();
     TempList.clear();
-    var url = Uri.parse(Main_Screen.url.toString() + '/getcounters');
+    var url = Uri.parse(Main_Screen.url.toString() + 'getcounters');
     Map<String, dynamic> bbb = {
       'Option': Type == 'box' ? 2 : 1,
       'CodeId': Type == 'box' ? Value : getId(Value),
@@ -286,7 +286,7 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                                         onPressed: () async {
                                           EasyLoading.show();
                                           var url = Uri.parse(
-                                              'http://localhost:5000/transaction');
+                                              Main_Screen.url +'transaction');
 
                                           Map<String, dynamic> bbb = {
                                             'id': int.parse(client.id),

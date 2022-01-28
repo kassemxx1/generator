@@ -7,7 +7,7 @@ class Main_Screen extends StatefulWidget {
   static const String id = 'Main_Screen';
   static List<String> suggestions = [];
   static bool loading = false;
-  static const String url = 'http://localhost:5000';
+  static const String url = 'https://dry-thicket-38215.herokuapp.com/';
   static var lastUpdate = '';
   const Main_Screen({Key? key}) : super(key: key);
 

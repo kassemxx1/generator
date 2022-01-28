@@ -26,7 +26,7 @@ class _Login_ScreenState extends State<Login_Screen> {
 
   void login(String user,String pass) async {
     EasyLoading.show();
-    var url = Uri.parse(Main_Screen.url.toString() + '/login');
+    var url = Uri.parse(Main_Screen.url.toString() + 'login');
     Map<String, dynamic> bbb = {
       'user': Name ,
       'password':Pass,
