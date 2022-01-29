@@ -155,7 +155,16 @@ class _Counter_ScreenState extends State<Counter_Screen> {
         value: Clientss(),
         child: Consumer<Clientss>(
           builder: (context, value, child) => Scaffold(
+
+            backgroundColor: Colors.yellowAccent,
             appBar: AppBar(
+              title: Text('Counters',style: TextStyle(
+                  fontSize: 30,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),),
+              backgroundColor: Colors.blueGrey[400],
+
               actions: [
                 IconButton(
                     onPressed: () {
@@ -167,13 +176,20 @@ class _Counter_ScreenState extends State<Counter_Screen> {
               ],
             ),
             body: ListView(
+
               children: [
-                Text(Main_Screen.lastUpdate),
+                Center(child: Text(Main_Screen.lastUpdate,style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+
+                ),)),
                 CustomRadioButton(
                   enableShape: false,
                   elevation: 0,
                   absoluteZeroSpacing: true,
-                  unSelectedColor: Theme.of(context).canvasColor,
+                  unSelectedColor: Colors.yellowAccent,
+                  selectedBorderColor: Colors.blueGrey,
+
                   buttonLables: [
                     'name',
                     'box',
@@ -187,7 +203,7 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                   buttonTextStyle: ButtonTextStyle(
                       selectedColor: Colors.white,
                       unSelectedColor: Colors.black,
-                      textStyle: TextStyle(fontSize: 16)),
+                      textStyle: TextStyle(fontSize: 16,color: Colors.white)),
                   radioButtonValue: (value) {
                     setState(() {
                       Type = value.toString();
@@ -210,25 +226,70 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                         print(Value);
                       },
                     )),
-                Center(
-                  child: Text(Value),
+                Container(
+                  height: 40,
+                  child: Center(
+                    child: Text(Value,style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),),
+                  ),
                 ),
-                MaterialButton(
-                  child: Text('Get'),
-                  onPressed: () {
-                    SearchController.clear();
-                    GetInfo(Value);
-                  },
+                Center(
+                  child: Container(
+                    width: MediaQuery.of(context).size.width/3,
+
+                    color: Colors.blueGrey,
+                    child: MaterialButton(
+                      child: Text('Get',style:TextStyle(fontSize:16,color:Colors.white,fontWeight: FontWeight.bold )),
+                      onPressed: () {
+                        SearchController.clear();
+                        GetInfo(Value);
+                      },
+                    ),
+                  ),
                 ),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: DataTable(
-                    dataRowHeight: 60,
+                    dataRowHeight: 70,
                     columns: [
                       DataColumn(
-                          label: Center(
-                        child: Center(child: Text('ID')),
-                      )),
+                          label: Container(
+                            width: MediaQuery.of(context).size.width,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex:3,
+                                    child: Center(child: Column(
+                                      children: [
+                                        Text('Name',style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                        ),),
+                                        Text('Old Counter',style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                        ),),
+                                      ],
+                                    ))),
+                                Expanded(
+                                  flex:3,
+                                  child: Center(child: Text('New Counter',style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ))),
+                                ),
+                                Expanded(
+                                  flex: 4,
+                                  child: Center(child: Text('#',style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ))),
+                                )
+                              ],
+                            ),
+                          )),
                     ],
                     rows: TempList.map((client) =>
                         DataRow(selected: true, cells: [
@@ -238,7 +299,7 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                                 child: Row(
                                   children: [
                                     Expanded(
-                                      flex: 4,
+                                      flex: 3,
                                       child: Column(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
@@ -281,7 +342,7 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                                           onChanged: (value) {},
                                         )),
                                     Expanded(
-                                      flex: 3,
+                                      flex: 4,
                                       child: MaterialButton(
                                         onPressed: () async {
                                           EasyLoading.show();
@@ -313,7 +374,7 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                                                   backgroundColor: Colors.grey,
                                                   textColor: Colors.white,
                                                   fontSize: 16.0);
-                                              client.cont.clear();
+                                             // client.cont.clear();
                                               EasyLoading.dismiss();
                                             }
                                             if (data['state'] == 2) {
