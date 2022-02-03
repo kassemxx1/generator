@@ -21,14 +21,20 @@ class Clientss extends ChangeNotifier {
     var data = json.decode(response.body);
     for (var i in data['recordsets'][0]) {
       var id = i['clientcode'].toString();
-      var name = i['clientname'].toString();
-      var lastcounter = i['oldcounter'].toString();
+      var name = i['clientName'].toString();
+      var address = i['address'].toString();
       var box = i['boxcode'].toString();
+      var phone=i['smsmobile'].toString();
+      var areacode=i['areacode'].toString();
+
       clientdesc.add({
         'id': id,
         'name': name,
-        'lastcounter': lastcounter,
-        'box': box
+        'address': address,
+        'box': box,
+        'phone':phone,
+        'areacode':areacode,
+
       });
     }
     _prefs.setString('lastupdate', DateTime.now().toString());

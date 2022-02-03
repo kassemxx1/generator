@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:generator/Bills_Screen.dart';
 import 'Counter_Screen.dart';
 import 'LoginScreen.dart';
 import 'Printing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:step_progress_indicator/step_progress_indicator.dart';
 class Main_Screen extends StatefulWidget {
   static const String id = 'Main_Screen';
   static List<String> suggestions = [];
   static bool loading = false;
-  static const String url = 'https://dry-thicket-38215.herokuapp.com/';
+ // static const String url = 'https://dry-thicket-38215.herokuapp.com/';
+  static const String url = 'http://localhost:3000/';
   static var lastUpdate = '';
   const Main_Screen({Key? key}) : super(key: key);
 
@@ -109,15 +112,52 @@ class _Main_ScreenState extends State<Main_Screen> {
           Center(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: MaterialButton(
+              child: Container(
+                height: 150,
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: MaterialButton(
 
-                height: 100,
-                minWidth: MediaQuery.of(context).size.width -30,
-                color: Colors.blueGrey,
-                onPressed: (){
-                  Navigator.pushNamed(context, Counter_Screen.id);
-                },
-                child: Text('Counter',style: TextStyle(fontWeight: FontWeight.bold,fontSize:20,color: Colors.white),),
+                        height: 100,
+                        minWidth: MediaQuery.of(context).size.width -30,
+                        color: Colors.blueGrey,
+                        onPressed: (){
+                          Navigator.pushNamed(context, Counter_Screen.id);
+                        },
+                        child: Text('Counter',style: TextStyle(fontWeight: FontWeight.bold,fontSize:20,color: Colors.white),),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.blueAccent),
+                        ),
+                        height: 100,
+                        width: 100,
+                        child: Padding(
+                          padding: const EdgeInsets.all(1.0),
+                          child: CircularStepProgressIndicator(
+                            totalSteps: 100,
+                            currentStep: 65,
+                            stepSize: 10,
+                            selectedStepSize: 20,
+                            unselectedStepSize: 20,
+                            selectedColor: Colors.red,
+                            unselectedColor: Colors.purple[400],
+                            child: Center(child: Text('65/100')),
+
+                            roundedCap: (_, __) => true,
+
+
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
           ),
@@ -129,6 +169,7 @@ class _Main_ScreenState extends State<Main_Screen> {
                 minWidth: MediaQuery.of(context).size.width -30,
                 color: Colors.blueGrey,
                 onPressed: (){
+                  Navigator.pushNamed(context, Bill_Screen.id);
                 },
                 child: Text('Bills',style: TextStyle(fontWeight: FontWeight.bold,fontSize:20,color: Colors.white),),
               ),
