@@ -13,6 +13,7 @@ class Main_Screen extends StatefulWidget {
   static const String url = 'http://localhost:3000/';
   static var lastUpdate = '';
   const Main_Screen({Key? key}) : super(key: key);
+  static var lastBillUpdate = '';
 
 
   @override
@@ -25,12 +26,13 @@ class _Main_ScreenState extends State<Main_Screen> {
     return Scaffold(
       backgroundColor: Colors.yellowAccent,
       appBar: AppBar(
-        backgroundColor: Colors.blueGrey,
+        backgroundColor: Colors.white,
         title: Text(
-          'Main',
+          'Home',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 25
+            fontSize: 25,
+            color: Colors.black,
           ),
         ),
         actions: [
@@ -38,9 +40,12 @@ class _Main_ScreenState extends State<Main_Screen> {
               icon: Icon(Icons.exit_to_app)),
 
         ],
+        iconTheme: IconThemeData(color: Colors.black),
 
       ),
+
       drawer: Drawer(
+
         child: Container(
           color: Colors.yellowAccent,
           child: ListView(
