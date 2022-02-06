@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:generator/Bills_Screen.dart';
 import 'Counter_Screen.dart';
@@ -5,10 +7,14 @@ import 'LoginScreen.dart';
 import 'Printing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
+import 'package:http/http.dart' as http;
+
 class Main_Screen extends StatefulWidget {
   static const String id = 'Main_Screen';
   static List<String> suggestions = [];
   static bool loading = false;
+  static List<String> suggestionsbill = [];
+  static bool loadingbill = false;
  // static const String url = 'https://dry-thicket-38215.herokuapp.com/';
   static const String url = 'http://localhost:3000/';
   static var lastUpdate = '';
@@ -21,10 +27,69 @@ class Main_Screen extends StatefulWidget {
 }
 
 class _Main_ScreenState extends State<Main_Screen> {
+  var counter =50;
+  var totalcounter = 100;
+  var bills =40;
+  var totalBills=100;
+
+  void getrecords(int option) async{
+    var url = Uri.parse(Main_Screen.url.toString() + 'getcounters');
+    try {
+      Map<String, dynamic> bbb = {
+        'id':'',
+        'month':DateTime.now().month,
+        'Option':option,
+
+      };
+      var response = await http.post(url,
+          headers: <String, String>{
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          },
+          body: json.encode(bbb));
+      var data = json.decode(response.body);
+      print(data);
+     for(var i in data['recordsets'][0]){
+       if(option==3){
+         setState(() {
+           counter = i['Countred'];
+           if(i['ClientCount']>20){
+             totalcounter=i['ClientCount'];
+           }
+
+         });
+       }
+
+       if(option==4){
+         setState(() {
+           bills = i['Countred'];
+           if(i['ClientCount']>20){
+             totalBills=i['ClientCount'];
+           }
+
+         });
+       }
+     }
+    }
+
+    catch (err){
+
+    }
+  print(totalBills);
+    print(totalcounter);
+
+  }
+  @override
+  void initState() {
+    getrecords(3);
+    getrecords(4);
+    // TODO: implement initState
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.yellowAccent,
+
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: Text(
@@ -47,7 +112,7 @@ class _Main_ScreenState extends State<Main_Screen> {
       drawer: Drawer(
 
         child: Container(
-          color: Colors.yellowAccent,
+
           child: ListView(
             children:[
               Container(
@@ -107,76 +172,101 @@ class _Main_ScreenState extends State<Main_Screen> {
           ),
         )
       ),
-      body: ListView(
+      body: GridView.count(
+        crossAxisCount: 2,
         children: [
-          Padding(padding: const EdgeInsets.all(8.0),
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width,
-            height: 30,
-          ),),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                height: 150,
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: MaterialButton(
 
-                        height: 100,
-                        minWidth: MediaQuery.of(context).size.width -30,
-                        color: Colors.blueGrey,
-                        onPressed: (){
-                          Navigator.pushNamed(context, Counter_Screen.id);
-                        },
-                        child: Text('Counter',style: TextStyle(fontWeight: FontWeight.bold,fontSize:20,color: Colors.white),),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GestureDetector(
+              onTap: (){
+                Navigator.pushNamed(context, Counter_Screen.id);
+              },
+              child: Card(
+                elevation: 20,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.lightbulb,color: Colors.yellow,size: 50,),
+                      SizedBox(
+                        height: 20,
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.blueAccent),
-                        ),
-                        height: 100,
-                        width: 100,
-                        child: Padding(
-                          padding: const EdgeInsets.all(1.0),
-                          child: CircularStepProgressIndicator(
-                            totalSteps: 100,
-                            currentStep: 65,
-                            stepSize: 10,
-                            selectedStepSize: 20,
-                            unselectedStepSize: 20,
-                            selectedColor: Colors.red,
-                            unselectedColor: Colors.purple[400],
-                            child: Center(child: Text('65/100')),
-
-                            roundedCap: (_, __) => true,
-
-
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
+                      Text('Counter',style: TextStyle(fontWeight: FontWeight.bold,fontSize:20,color: Colors.black),),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: MaterialButton(
-                height: 100,
-                minWidth: MediaQuery.of(context).size.width -30,
-                color: Colors.blueGrey,
-                onPressed: (){
-                  Navigator.pushNamed(context, Bill_Screen.id);
-                },
-                child: Text('Bills',style: TextStyle(fontWeight: FontWeight.bold,fontSize:20,color: Colors.white),),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Card(
+              elevation: 20,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CircularStepProgressIndicator(
+                  totalSteps: int.parse(totalcounter.toString()),
+                  currentStep: int.parse(counter.toString()),
+                  stepSize: 10,
+                  selectedStepSize: 25,
+                  unselectedStepSize: 25,
+                  selectedColor: Colors.red,
+                  unselectedColor: Colors.purple[400],
+                  child: Center(child: Text(counter.toString() +'/' + totalcounter.toString(),style: TextStyle(
+                    fontSize: 20,
+                  ),)),
+
+                  roundedCap: (_, __) => true,
+
+
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GestureDetector(
+              onTap: (){
+                Navigator.pushNamed(context, Bill_Screen.id);
+              },
+              child: Card(
+                elevation: 20,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.article_outlined,color: Colors.pinkAccent,size: 50,),
+                      SizedBox(height: 20,),
+                      Text('Bills',style: TextStyle(fontWeight: FontWeight.bold,fontSize:20,color: Colors.black),),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Card(
+              elevation: 20,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CircularStepProgressIndicator(
+                  totalSteps: totalBills ,
+                  currentStep: bills,
+                  stepSize: 10,
+                  selectedStepSize: 25,
+                  unselectedStepSize: 25,
+                  selectedColor: Colors.greenAccent,
+                  unselectedColor: Colors.yellowAccent,
+                  child: Center(child: Text(bills.toString() +'/' + totalBills.toString(),style: TextStyle(
+                    fontSize: 20,
+                  ),)),
+
+                  roundedCap: (_, __) => true,
+
+
+                ),
               ),
             ),
           ),

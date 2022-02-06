@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
-
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
@@ -11,8 +11,9 @@ import 'package:provider/provider.dart';
 import 'package:custom_radio_grouped_button/custom_radio_grouped_button.dart';
 import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'Main_screen.dart';
-import 'Provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:date_format/date_format.dart';
 class Bill_Screen extends StatefulWidget {
   static const String id = 'Bill_Screen';
   const Bill_Screen({Key? key}) : super(key: key);
@@ -24,19 +25,9 @@ class Bill_Screen extends StatefulWidget {
 class _Bill_ScreenState extends State<Bill_Screen> {
   TextEditingController SearchController = TextEditingController();
   var Value = '';
-
-  var id='';
-  var name='';
-  var phone='';
-  var prev='';
-  var curr='';
-  var total='';
-  var fixed='';
-  var amount='';
-  var price='';
-  var extra='';
-  var month='';
-  var year='';
+  var Type='';
+  var Clients = [];
+  var TempList = [];
 
   Future<void> main() async {
     final pdf = pw.Document(version: PdfVersion.pdf_1_5, compress: true);
@@ -48,16 +39,7 @@ class _Bill_ScreenState extends State<Bill_Screen> {
         pageFormat: PdfPageFormat.roll80,
         build: (pw.Context context) => pw.Center(
           child: pw.Column(children: [
-            pw.Text('month:' + month +'/'+year, style: pw.TextStyle(font: font)),
 
-            pw.Text('name:' + name, style: pw.TextStyle(font: font),textDirection: pw.TextDirection.rtl),
-            pw.Text('phone:' + phone, style: pw.TextStyle(font: font)),
-            pw.Text('old Counter:' + prev, style: pw.TextStyle(font: font)),
-            pw.Text('new Counter:' + curr, style: pw.TextStyle(font: font)),
-            pw.Text('fixed:' + fixed, style: pw.TextStyle(font: font)),
-            pw.Text('total:' + total, style: pw.TextStyle(font: font)),
-            pw.Text('1 kilo:' + price, style: pw.TextStyle(font: font)),
-            pw.Text('amount:' + amount, style: pw.TextStyle(font: font)),
           ]),
         ),
       ),
@@ -74,35 +56,136 @@ class _Bill_ScreenState extends State<Bill_Screen> {
     //  );
   }
   void getBill(String id) async{
-    var url = Uri.parse(Main_Screen.url.toString() + 'getbill/$id');
+    EasyLoading.show();
+    TempList.clear();
+    var url = Uri.parse(Main_Screen.url.toString() + 'getSpecificbill');
+
+
     print(url);
     try{
-      var response = await http.get(url);
+
+      Map<String, dynamic> bbb = {
+        'year':DateTime.now().year,
+        'month':DateTime.now().month,
+        'id': Type == 'clientcode' ? Value : getId(Value),
+      };
+      var response = await http.post(url,
+          headers: <String, String>{
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          },
+          body: json.encode(bbb));
       var data = json.decode(response.body);
+      print(data);
       for(var i in data['recordsets'][0]){
         setState(() {
-          name=i['Names'].toString();
-          id=i['ClientCode'].toString();
-          phone=i['smsmobile'].toString();
-          prev=i['PrevCounter'].toString();
-          curr=i['CurCounter'].toString();
-          fixed=i['FixCost'].toString();
-          total=i['CtrQty'].toString();
-          extra=i['XtraQty'].toString();
-          amount=i['Amount'].toString();
-          price=i['Uprice'].toString();
-          month=i['schMonth'].toString();
-          year=i['schYear'].toString();
+          TempList.add(Bill(i['ClientCode'].toString(), i['Names'].toString(),
+              i['schMonth'].toString(), i['schYear'].toString(), i['balance'].toString(),
+              i['netAmount'].toString(), i['fctnbr'].toString(),i['MonthAr']));
+
         });
       }
-
+      EasyLoading.dismiss();
     }
     catch(err){
       print(err);
+      EasyLoading.dismiss();
     }
+    EasyLoading.dismiss();
 
   }
-
+  void getallBills() async {
+    var clientdesc = [];
+    EasyLoading.show();
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    clientdesc.clear();
+    Main_Screen.suggestionsbill.clear();
+    Main_Screen.loadingbill = true;
+    var url = Uri.parse(Main_Screen.url.toString()+'getbills');
+    try{
+      var response = await http.get(url);
+      var data = json.decode(response.body);
+      for (var i in data['recordsets'][0]) {
+        var monthnumb=i['schMonth'].toString();
+        var yearnumb=  i['schYear'].toString();
+        var clientcode =i['ClientCode'].toString();
+        var names = i['Names'].toString();
+        var billnumb=i['fctnbr'].toString();
+        clientdesc.add({
+          'monthnumb' : monthnumb,
+          'yearnumb':yearnumb,
+          'clientcode':clientcode,
+          'names':names,
+          'billnumb':billnumb,
+        });
+      }
+      _prefs.setString('lastupdatebill', DateTime.now().toString());
+      _prefs.remove('allbills');
+      _prefs.setString('allbills', json.encode(clientdesc));
+      _prefs.setBool('second', false);
+      Main_Screen.lastBillUpdate = formatDate(
+          DateTime.parse(_prefs.getString('lastupdatebill').toString()),
+          [hh, ':', nn, ' ', dd, '-', mm, '-', yyyy]) +
+          ': آخر تحديث';
+      getclients();
+      EasyLoading.dismiss();
+      Main_Screen.loadingbill = false;
+    }
+    catch(err){
+      print(err);
+      EasyLoading.dismiss();
+    }
+    EasyLoading.dismiss();
+  }
+  void getlast() async {
+    EasyLoading.show();
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    if (_prefs.getBool('second') == false) {
+      setState(() {
+        Main_Screen.lastBillUpdate = formatDate(
+            DateTime.parse(_prefs.getString('lastupdate').toString()),
+            [hh, ':', nn, ' ', dd, '-', mm, '-', yyyy]) +
+            ': آخر تحديث';
+      });
+    } else {
+      Main_Screen.lastUpdate = 'Please Update';
+    }
+    EasyLoading.dismiss();
+  }
+  void getclients() async {
+    Clients.clear();
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    setState(() {
+      Clients = json.decode(_prefs.getString('allbills').toString());
+    });
+  }
+  void getData(String type) {
+    EasyLoading.show();
+    Main_Screen.suggestionsbill.clear();
+    for (var i in Clients) {
+      setState(() {
+        Main_Screen.suggestionsbill.add(i[type].toString());
+      });
+    }
+    EasyLoading.dismiss();
+  }
+  String getId(String name) {
+    for (var i in Clients) {
+      if (i['names'] == Value) {
+        return i['clientcode'];
+      }
+      if (i['billnumb'] == Value) {
+        return i['clientcode'];
+      }
+    }
+    return (Value);
+  }
+  @override
+  void initState() {
+    getlast();
+    getclients();
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,46 +196,58 @@ class _Bill_ScreenState extends State<Bill_Screen> {
                   style: TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Colors.black,
                   ),
                 ),
-                backgroundColor: Colors.blueGrey[400],
+                backgroundColor: Colors.white,
                 actions: [
-                  IconButton(onPressed: () {}, icon: Icon(Icons.update)),
+                  IconButton(onPressed: () {
+                    getallBills();
+                  }, icon: Icon(Icons.update)),
                 ],
+                iconTheme: IconThemeData(color: Colors.black),
               ),
               body: ListView(
                 children: [
-                  Center(
-                      child: Text(
-                    Main_Screen.lastBillUpdate,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                        child: Text(
+                      Main_Screen.lastBillUpdate,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )),
+                  ),
                   CustomRadioButton(
                     enableShape: false,
                     elevation: 0,
                     absoluteZeroSpacing: true,
-                    unSelectedColor: Colors.yellowAccent,
+                    unSelectedColor: Colors.grey,
                     selectedBorderColor: Colors.blueGrey,
                     buttonLables: [
-                      'name',
-                      'box',
-                      'id',
+                      'Name',
+                      'ID',
+                      'Bill',
                     ],
                     buttonValues: [
-                      "name",
-                      "box",
-                      "id",
+                      "names",
+                      "clientcode",
+                      "billnumb",
                     ],
                     buttonTextStyle: ButtonTextStyle(
+
                         selectedColor: Colors.white,
                         unSelectedColor: Colors.black,
                         textStyle:
-                            TextStyle(fontSize: 16, color: Colors.white)),
-                    radioButtonValue: (value) {},
+                            TextStyle(fontSize: 18, color: Colors.white)),
+                    radioButtonValue: (value) {
+                      setState(() {
+                        Type=value.toString();
+                      });
+                      getData(value.toString());
+                    },
                     selectedColor: Theme.of(context).backgroundColor,
                   ),
                   Container(
@@ -160,7 +255,7 @@ class _Bill_ScreenState extends State<Bill_Screen> {
                       alignment: Alignment.center,
                       child: EasyAutocomplete(
                         controller: SearchController,
-                        suggestions: Main_Screen.suggestions,
+                        suggestions: Main_Screen.suggestionsbill,
                         autofocus: false,
                         onChanged: (value) {
                           setState(() {
@@ -197,67 +292,81 @@ class _Bill_ScreenState extends State<Bill_Screen> {
                       ),
                     ),
                   ),
-                  Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height/3,
-                    child: Column(
-                      children: [
-                        Center(
-                          child:Text(
-                            'Month:' +month +'/'+year
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              flex:5,
-                              child: Text('name:'+ name),
-                            ),
-                            Expanded(
-                              flex:5,
-                              child: Text('phone:'+ phone),
-                            ),
+                   SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                     child: DataTable(
+                       dataRowHeight: 70,
+                       columns: [
+                         DataColumn(
+                             label: Container(
+                               width: MediaQuery.of(context).size.width*1.3/5,
+                               child: Text('الاسم',style: TextStyle(
+                                 fontSize: 18,
+                                 fontWeight: FontWeight.bold,
+                                 color: Colors.black
+                               ),),
+                             )
+                         ),
+                         DataColumn(
+                           label: Container(
+                             width: MediaQuery.of(context).size.width*0.9/5,
+                             child: Text('شهر',style: TextStyle(
+                                 fontSize: 18,
+                                 fontWeight: FontWeight.bold,
+                                 color: Colors.black
+                             ),),
+                           )
+                         ),
+                         DataColumn(
+                             label: Container(
+                               width: MediaQuery.of(context).size.width*0.9/5,
+                               child: Text('المبلغ',style: TextStyle(
+                                   fontSize: 18,
+                                   fontWeight: FontWeight.bold,
+                                   color: Colors.black
+                               ),),
+                             )
+                         )
+                       ],
+                      rows: TempList.map((Bill) =>
+                        DataRow(
+                          onLongPress: (){
 
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              flex:5,
-                              child: Text('old counter:'+ prev),
+                          },
+                            cells:[
+                              DataCell(
+                            Text(
+                                Bill.name,style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue
                             ),
-                            Expanded(
-                              flex:5,
-                              child: Text('new count:'+ curr),
                             ),
-
-                          ],
-                        ),
-                        Center(
-                          child: Text('kilowatt:'+ total),
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              flex:5,
-                              child: Text('price:'+ price),
                             ),
-                            Expanded(
-                              flex:5,
-                              child: Text('fixed:'+ fixed),
+                              DataCell(
+                                Text(
+                                  Bill.MonthAr,style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black
+                                ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  Bill.netAmount,style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red
+                                ),
+                                ),
+                              ),
+
+
+                           ] )).toList(),
                             ),
+                     ),
 
-                          ],
-                        ),
-                        Center(
-
-                          child: Text('amount:'+ amount),
-                        ),
-
-                      ],
-                    ),
-
-                  ),
                   MaterialButton(
                     onPressed: (){
                       main();
@@ -271,3 +380,14 @@ class _Bill_ScreenState extends State<Bill_Screen> {
 }
 
 
+class Bill {
+  String ID;
+  String name;
+  String month;
+  String Year;
+  String Balance;
+  String netAmount;
+  String billnumb;
+  String MonthAr;
+  Bill(this.ID,this.name,this.month,this.Year,this.Balance,this.netAmount,this.billnumb,this.MonthAr);
+}

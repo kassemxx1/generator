@@ -106,6 +106,7 @@ class _Counter_ScreenState extends State<Counter_Screen> {
     Map<String, dynamic> bbb = {
       'Option': Type == 'box' ? 2 : 1,
       'CodeId': Type == 'box' ? Value : getId(Value),
+      'month':DateTime.now().month,
     };
     try {
       var response = await http.post(url,
@@ -125,7 +126,19 @@ class _Counter_ScreenState extends State<Counter_Screen> {
             false,
           ));
         });
+
         EasyLoading.dismiss();
+
+      }
+      if(data['recordsets'].lengh==0){
+        Fluttertoast.showToast(
+            msg: "غير مسموح",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.grey,
+            textColor: Colors.white,
+            fontSize: 16.0);
       }
     } catch (err) {
       Fluttertoast.showToast(
@@ -157,17 +170,17 @@ class _Counter_ScreenState extends State<Counter_Screen> {
         value: Clientss(),
         child: Consumer<Clientss>(
           builder: (context, value, child) => Scaffold(
-            backgroundColor: Colors.yellowAccent,
+            backgroundColor: Colors.white,
             appBar: AppBar(
               title: Text(
                 'Counters',
                 style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Colors.black,
                 ),
               ),
-              backgroundColor: Colors.blueGrey[400],
+              backgroundColor: Colors.white,
               actions: [
                 IconButton(
                     onPressed: () {
@@ -177,23 +190,27 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                     },
                     icon: Icon(Icons.update)),
               ],
+              iconTheme: IconThemeData(color: Colors.black),
             ),
             body: ListView(
               children: [
-                Center(
-                    child: Text(
-                  Main_Screen.lastUpdate,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                )),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                      child: Text(
+                    Main_Screen.lastUpdate,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )),
+                ),
                 CustomRadioButton(
                   enableShape: false,
                   elevation: 0,
                   absoluteZeroSpacing: true,
-                  unSelectedColor: Colors.yellowAccent,
-                  selectedBorderColor: Colors.blueGrey,
+                  unSelectedColor: Colors.grey,
+                  selectedBorderColor: Colors.grey,
                   buttonLables: [
                     'name',
                     'box',
@@ -242,19 +259,22 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                   ),
                 ),
                 Center(
-                  child: Container(
-                    width: MediaQuery.of(context).size.width / 3,
-                    color: Colors.blueGrey,
-                    child: MaterialButton(
-                      child: Text('Get',
-                          style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold)),
-                      onPressed: () {
-                        SearchController.clear();
-                        GetInfo(Value);
-                      },
+                  child: Card(
+                    elevation: 20,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width / 3,
+                      color: Colors.grey,
+                      child: MaterialButton(
+                        child: Text('Get',
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold)),
+                        onPressed: () {
+                          SearchController.clear();
+                          GetInfo(Value);
+                        },
+                      ),
                     ),
                   ),
                 ),
@@ -311,7 +331,7 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                         ),
                       )),
                     ],
-                    rows: TempList.map((client) =>
+                      rows: TempList.map((client) =>
                         DataRow(selected: true, cells: [
                           DataCell(
                               Container(
@@ -367,6 +387,7 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                                         flex: 4,
                                         child: MaterialButton(
                                           onPressed: () async {
+
                                             print(checkifnum(client.cont.text));
                                             if (checkifnum(client.cont.text
                                                         .toString()) ==
@@ -395,9 +416,11 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                                                     int.parse(client.cont.text),
                                                 'userName': _prefs
                                                     .getString('user')
-                                                    .toString()
+                                                    .toString(),
+
                                               };
                                               try {
+
                                                 var response = await http.post(
                                                     url,
                                                     headers: <String, String>{
