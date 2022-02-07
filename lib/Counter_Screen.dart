@@ -226,6 +226,7 @@ class _Counter_ScreenState extends State<Counter_Screen> {
                       unSelectedColor: Colors.black,
                       textStyle: TextStyle(fontSize: 16, color: Colors.white)),
                   radioButtonValue: (value) {
+
                     setState(() {
                       Type = value.toString();
                       getData(Type);

@@ -1,13 +1,12 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
+import 'package:generator/Payment_Screen.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 import 'dart:io';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
 import 'package:custom_radio_grouped_button/custom_radio_grouped_button.dart';
 import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'Main_screen.dart';
@@ -16,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:date_format/date_format.dart';
 class Bill_Screen extends StatefulWidget {
   static const String id = 'Bill_Screen';
+  static var client = '';
   const Bill_Screen({Key? key}) : super(key: key);
 
   @override
@@ -29,32 +29,17 @@ class _Bill_ScreenState extends State<Bill_Screen> {
   var Clients = [];
   var TempList = [];
 
-  Future<void> main() async {
-    final pdf = pw.Document(version: PdfVersion.pdf_1_5, compress: true);
-    final font = await PdfGoogleFonts.iBMPlexSansArabicRegular();
-    // final pdf = pw.Document();
+  void refreshCLient() {
+    print(Bill_Screen.client);
+    if(Bill_Screen.client ==''){
+    }
+    else{
+      getBackBill(Bill_Screen.client);
+    }
 
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.roll80,
-        build: (pw.Context context) => pw.Center(
-          child: pw.Column(children: [
-
-          ]),
-        ),
-      ),
-    );
-    final output = await getTemporaryDirectory();
-    final file = File('${output.path}/example.pdf');
-//   await file.writeAsBytes(await pdf.save());
-   await Printing.sharePdf(bytes: await pdf.save(), filename: 'example.pdf');
-   //  await Printing.layoutPdf(
-   //      onLayout: (PdfPageFormat format) async => pdf.save());
-
-    // await PdfPreview(
-    //    build: (format) => pdf.save(),
-    //  );
   }
+
+
   void getBill(String id) async{
     EasyLoading.show();
     TempList.clear();
@@ -75,12 +60,49 @@ class _Bill_ScreenState extends State<Bill_Screen> {
           },
           body: json.encode(bbb));
       var data = json.decode(response.body);
+      for(var i in data['recordsets'][0]){
+        setState(() {
+          TempList.add(Bill(i['ClientCode'].toString(), i['Names'].toString(),
+              i['schMonth'].toString(), i['schYear'].toString(), i['balance'].toString(),
+              i['netAmount'].toString(), i['fctnbr'].toString(),i['MonthAr'],i['AccountCode'].toString(),i['schType'].toString(),i['schNumber'].toString(),i['PrevCounter'].toString(),i['CurCounter'].toString(),i['Uprice'].toString()));
+
+        });
+      }
+      EasyLoading.dismiss();
+    }
+    catch(err){
+      print(err);
+      EasyLoading.dismiss();
+    }
+    EasyLoading.dismiss();
+
+  }
+  void getBackBill(String id) async{
+    EasyLoading.show();
+    TempList.clear();
+    var url = Uri.parse(Main_Screen.url.toString() + 'getSpecificbill');
+
+
+    print(url);
+    try{
+
+      Map<String, dynamic> bbb = {
+        'year':DateTime.now().year,
+        'month':DateTime.now().month,
+        'id': id,
+      };
+      var response = await http.post(url,
+          headers: <String, String>{
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          },
+          body: json.encode(bbb));
+      var data = json.decode(response.body);
       print(data);
       for(var i in data['recordsets'][0]){
         setState(() {
           TempList.add(Bill(i['ClientCode'].toString(), i['Names'].toString(),
               i['schMonth'].toString(), i['schYear'].toString(), i['balance'].toString(),
-              i['netAmount'].toString(), i['fctnbr'].toString(),i['MonthAr']));
+              i['netAmount'].toString(), i['fctnbr'].toString(),i['MonthAr'],i['AccountCode'].toString(),i['schType'].toString(),i['schNumber'].toString(),i['PrevCounter'].toString(),i['CurCounter'].toString(),i['Uprice'].toString()));
 
         });
       }
@@ -110,12 +132,27 @@ class _Bill_ScreenState extends State<Bill_Screen> {
         var clientcode =i['ClientCode'].toString();
         var names = i['Names'].toString();
         var billnumb=i['fctnbr'].toString();
+        var smsmobile=i['smsmobile'].toString();
+        var PrevCounter = i['PrevCounter'].toString();
+        var CurCounter=i['CurCounter'].toString();
+        var FixCost=i['FixCost'].toString();
+        var CtrQty=i['CtrQty'].toString();
+        var XtraQty=i['XtraQty'].toString();
+        var Uprice=i['Uprice'].toString();
+
         clientdesc.add({
           'monthnumb' : monthnumb,
           'yearnumb':yearnumb,
           'clientcode':clientcode,
           'names':names,
           'billnumb':billnumb,
+          'smsmobile':smsmobile,
+          'PrevCounter':PrevCounter,
+          'CurCounter':CurCounter,
+          'FixCost':FixCost,
+          'CtrQty':CtrQty,
+          'XtraQty':XtraQty,
+          'Uprice':Uprice,
         });
       }
       _prefs.setString('lastupdatebill', DateTime.now().toString());
@@ -179,8 +216,18 @@ class _Bill_ScreenState extends State<Bill_Screen> {
     }
     return (Value);
   }
+  void getCounters(String id){
+    for(var i in Clients){
+      if(id == i['clientcode']){
+        setState(() {
+
+        });
+      }
+    }
+  }
   @override
   void initState() {
+    refreshCLient();
     getlast();
     getclients();
     // TODO: implement initState
@@ -243,10 +290,17 @@ class _Bill_ScreenState extends State<Bill_Screen> {
                         textStyle:
                             TextStyle(fontSize: 18, color: Colors.white)),
                     radioButtonValue: (value) {
+
+                      TempList.clear();
                       setState(() {
+
+                        SearchController.clear();
                         Type=value.toString();
+                        getData(value.toString());
+                        SearchController.text=' ';
+                        SearchController.clear();
                       });
-                      getData(value.toString());
+
                     },
                     selectedColor: Theme.of(context).backgroundColor,
                   ),
@@ -256,7 +310,7 @@ class _Bill_ScreenState extends State<Bill_Screen> {
                       child: EasyAutocomplete(
                         controller: SearchController,
                         suggestions: Main_Screen.suggestionsbill,
-                        autofocus: false,
+                        autofocus: true,
                         onChanged: (value) {
                           setState(() {
                             Value = value;
@@ -331,6 +385,25 @@ class _Bill_ScreenState extends State<Bill_Screen> {
                       rows: TempList.map((Bill) =>
                         DataRow(
                           onLongPress: (){
+                            Payment_Screen.ID = Bill.ID;
+                            Payment_Screen.name = Bill.name;
+                            Payment_Screen.AcountCode = Bill.AcountCode;
+                            Payment_Screen.netAmount = Bill.netAmount;
+                            Payment_Screen.Balance = Bill.Balance;
+                            Payment_Screen.MonthAr = Bill.MonthAr;
+                            Payment_Screen.month = Bill.month;
+                            Payment_Screen.Year = Bill.Year;
+                            Payment_Screen.billnumb = Bill.billnumb;
+                            Payment_Screen.schType = Bill.schType;
+                            Payment_Screen.schCtrNbr = Bill.schNumber;
+                            Payment_Screen.old = Bill.Prev;
+                            Payment_Screen.New = Bill.Current;
+                            Payment_Screen.price = Bill.Price;
+
+
+
+
+                            Navigator.pushNamed(context, Payment_Screen.id);
 
                           },
                             cells:[
@@ -354,7 +427,7 @@ class _Bill_ScreenState extends State<Bill_Screen> {
                               ),
                               DataCell(
                                 Text(
-                                  Bill.netAmount,style: TextStyle(
+                                  Bill.Balance,style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.red
@@ -367,12 +440,7 @@ class _Bill_ScreenState extends State<Bill_Screen> {
                             ),
                      ),
 
-                  MaterialButton(
-                    onPressed: (){
-                      main();
-                  },
-                    child: Text('Pay'),
-                  ),
+
                 ],
               ),
             );
@@ -389,5 +457,13 @@ class Bill {
   String netAmount;
   String billnumb;
   String MonthAr;
-  Bill(this.ID,this.name,this.month,this.Year,this.Balance,this.netAmount,this.billnumb,this.MonthAr);
+  String AcountCode;
+  String schType;
+  String schNumber;
+  String Prev;
+  String Current;
+  String Price;
+
+
+  Bill(this.ID,this.name,this.month,this.Year,this.Balance,this.netAmount,this.billnumb,this.MonthAr,this.AcountCode,this.schType,this.schNumber,this.Prev,this.Current,this.Price);
 }

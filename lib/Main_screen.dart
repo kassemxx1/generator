@@ -37,7 +37,7 @@ class _Main_ScreenState extends State<Main_Screen> {
     try {
       Map<String, dynamic> bbb = {
         'id':'',
-        'month':DateTime.now().month,
+        'month':1,
         'Option':option,
 
       };

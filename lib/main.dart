@@ -1,15 +1,14 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:generator/Bills_Screen.dart';
+import 'package:generator/Payment_Screen.dart';
 import 'LoginScreen.dart';
 import 'Main_screen.dart';
 import 'Counter_Screen.dart';
-import 'Printing.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'Payment_Screen.dart';
 
 void main() {
   runApp(Generator());
@@ -32,6 +31,7 @@ class _Generator extends State<Generator> {
         Counter_Screen.id: (context) => Counter_Screen(),
         Splash.id: (context) => Splash(),
         Bill_Screen.id:(context) =>Bill_Screen(),
+        Payment_Screen.id:(context) =>Payment_Screen(),
         //   Printing.id:(context) => Printing(),
       },
     );
