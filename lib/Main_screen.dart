@@ -8,7 +8,7 @@ import 'Printing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 import 'package:http/http.dart' as http;
-
+import 'Setting_Screen.dart';
 class Main_Screen extends StatefulWidget {
   static const String id = 'Main_Screen';
   static List<String> suggestions = [];
@@ -130,6 +130,7 @@ class _Main_ScreenState extends State<Main_Screen> {
 
               MaterialButton(
                 onPressed: (){
+                  Navigator.pushNamed(context, Setting_Secreen.id);
 
                 },
                 child: Center(
@@ -137,7 +138,7 @@ class _Main_ScreenState extends State<Main_Screen> {
                       color: Colors.blueGrey,
                     height: 50,
                     width: MediaQuery.of(context).size.width/2,
-                    child: Center(child: Text('Printer Setup',style: TextStyle(
+                    child: Center(child: Text('Setting',style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
 
@@ -199,31 +200,31 @@ class _Main_ScreenState extends State<Main_Screen> {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Card(
-              elevation: 20,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: CircularStepProgressIndicator(
-                  totalSteps: int.parse(totalcounter.toString()),
-                  currentStep: int.parse(counter.toString()),
-                  stepSize: 10,
-                  selectedStepSize: 25,
-                  unselectedStepSize: 25,
-                  selectedColor: Colors.red,
-                  unselectedColor: Colors.purple[400],
-                  child: Center(child: Text(counter.toString() +'/' + totalcounter.toString(),style: TextStyle(
-                    fontSize: 20,
-                  ),)),
-
-                  roundedCap: (_, __) => true,
-
-
-                ),
-              ),
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.all(8.0),
+          //   child: Card(
+          //     elevation: 20,
+          //     child: Padding(
+          //       padding: const EdgeInsets.all(8.0),
+          //       child: CircularStepProgressIndicator(
+          //         totalSteps: int.parse(totalcounter.toString()),
+          //         currentStep: int.parse(counter.toString()),
+          //         stepSize: 10,
+          //         selectedStepSize: 25,
+          //         unselectedStepSize: 25,
+          //         selectedColor: Colors.red,
+          //         unselectedColor: Colors.purple[400],
+          //         child: Center(child: Text(counter.toString() +'/' + totalcounter.toString(),style: TextStyle(
+          //           fontSize: 15,
+          //         ),)),
+          //
+          //         roundedCap: (_, __) => true,
+          //
+          //
+          //       ),
+          //     ),
+          //   ),
+          // ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: GestureDetector(
@@ -245,31 +246,54 @@ class _Main_ScreenState extends State<Main_Screen> {
               ),
             ),
           ),
+          // Padding(
+          //   padding: const EdgeInsets.all(8.0),
+          //   child: Card(
+          //     elevation: 20,
+          //     child: Padding(
+          //       padding: const EdgeInsets.all(8.0),
+          //       child: CircularStepProgressIndicator(
+          //         totalSteps: totalBills ,
+          //         currentStep: bills,
+          //         stepSize: 10,
+          //         selectedStepSize: 25,
+          //         unselectedStepSize: 25,
+          //         selectedColor: Colors.greenAccent,
+          //         unselectedColor: Colors.yellowAccent,
+          //         child: Center(child: Text(bills.toString() +'/' + totalBills.toString(),style: TextStyle(
+          //           fontSize: 15,
+          //         ),)),
+          //
+          //         roundedCap: (_, __) => true,
+          //
+          //
+          //       ),
+          //     ),
+          //   ),
+          // ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Card(
-              elevation: 20,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: CircularStepProgressIndicator(
-                  totalSteps: totalBills ,
-                  currentStep: bills,
-                  stepSize: 10,
-                  selectedStepSize: 25,
-                  unselectedStepSize: 25,
-                  selectedColor: Colors.greenAccent,
-                  unselectedColor: Colors.yellowAccent,
-                  child: Center(child: Text(bills.toString() +'/' + totalBills.toString(),style: TextStyle(
-                    fontSize: 20,
-                  ),)),
-
-                  roundedCap: (_, __) => true,
+            child: GestureDetector(
+              onTap: (){
+                Navigator.pushNamed(context, Setting_Secreen.id);
+              },
+              child: Card(
+                elevation: 20,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.settings,color: Colors.blue,size: 50,),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Text('Setting',style: TextStyle(fontWeight: FontWeight.bold,fontSize:20,color: Colors.black),),
 
 
+                  ],
                 ),
               ),
             ),
-          ),
+          )
         ],
       ),
 

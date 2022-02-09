@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:generator/Bills_Screen.dart';
 import 'package:generator/Payment_Screen.dart';
+import 'package:generator/Setting_Screen.dart';
+import 'package:generator/print_page.dart';
 import 'LoginScreen.dart';
 import 'Main_screen.dart';
 import 'Counter_Screen.dart';
@@ -32,7 +34,9 @@ class _Generator extends State<Generator> {
         Splash.id: (context) => Splash(),
         Bill_Screen.id:(context) =>Bill_Screen(),
         Payment_Screen.id:(context) =>Payment_Screen(),
+        printpage.id:(context) => printpage(),
         //   Printing.id:(context) => Printing(),
+        Setting_Secreen.id:(context)=>Setting_Secreen(),
       },
     );
   }
